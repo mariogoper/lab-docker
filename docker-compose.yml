@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Servicio web1 (Apache + PHP)
+  web1:
+    build:
+      context: ./web1
+      dockerfile: Dockerfile-web1
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.2
+    ports:
+      - "8096:80"  # Expone el puerto 80 del contenedor como 8096 en el host
+
+  # Servicio web2
+  web2:
+    build:
+      context: ./httpd
+      dockerfile: Dockerfile-httpd
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.3
+    ports:
+      - "8097:80"  # Expone el puerto 80 del contenedor como 8097 en el host
+
+  # Servicio de firewall
+  firewall:
+    build:
+      context: ./firewall
+      dockerfile: Dockerfile-firewall
+    cap_add:
+      - NET_ADMIN
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.4
+
+  # Contenedor Parrot Security OS
+  parrot:
+    build:
+      context: ./parrotsec
+      dockerfile: Dockerfile-parrot
+    networks:
+      mynetwork:
+        ipv4_address: 172.20.0.5
+    cap_add:
+      - NET_ADMIN
+    stdin_open: true
+    tty: true
+
+networks:
+  mynetwork:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
